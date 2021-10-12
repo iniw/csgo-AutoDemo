@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace csgo_AutoDemo
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    ///
     public partial class MainWindow : Window
     {
         private bool enabled = true;
@@ -33,53 +35,107 @@ namespace csgo_AutoDemo
         private static readonly string csgopath =
                 (string)
                     Registry.GetValue(
-                        @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 730",
-                        "InstallLocation", "");
+                        @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam",
+                        "InstallPath", "") + @"\steamapps\common\Counter-Strike Global Offensive";
 
-        private static void RunCmd(string cmd, string args = "")
+        [StructLayout(LayoutKind.Sequential)]
+        public struct COPYDATASTRUCT : IDisposable
         {
-            ProcessStartInfo psi = new ProcessStartInfo();
-            psi.CreateNoWindow = true;
-            psi.WindowStyle = ProcessWindowStyle.Hidden;
-            psi.FileName = "SourceCmd";
-            psi.Arguments = $"csgo.exe \"{cmd} {args} \"";
-            Process.Start(psi);
+            public IntPtr dwData;
+            public int cbData;
+            public IntPtr lpData;
+
+            public void Dispose()
+            {
+                if (lpData != IntPtr.Zero)
+                {
+                    Marshal.FreeCoTaskMem(lpData);
+                    lpData = IntPtr.Zero;
+                    cbData = 0;
+                }
+            }
+            public static COPYDATASTRUCT CreateForString(int dwData, string value, bool Unicode = false)
+            {
+                var result = new COPYDATASTRUCT();
+                result.dwData = (IntPtr)dwData;
+                result.lpData = Unicode ? Marshal.StringToCoTaskMemUni(value) : Marshal.StringToCoTaskMemAnsi(value);
+                result.cbData = value.Length + 1;
+                return result;
+            }
         }
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, ref COPYDATASTRUCT lParam);
+
+        private void ExecuteCmd(string cmd, string args = "")
+        {
+            var message = cmd + args;
+
+            var cds = COPYDATASTRUCT.CreateForString(0, message);
+
+            var window = FindWindow("Valve001", null);
+
+            SendMessage(window, 0x4A, IntPtr.Zero, ref cds);
+
+            cds.Dispose();
+        }
+        private string GetDaySuffix(int day)
+        {
+            switch (day)
+            {
+                case 1:
+                case 21:
+                case 31:
+                    return "st";
+                case 2:
+                case 22:
+                    return "nd";
+                case 3:
+                case 23:
+                    return "rd";
+                default:
+                    return "th";
+            }
+        }
+
+        private bool recording = false;
         private void Record()
         {
-            var demosubdir = $"{DateTime.Now.ToString("yyy")}_{DateTime.Now.ToString("M_MMM")}";
-            Directory.CreateDirectory(csgopath + $@"\csgo\autodemo\{demosubdir}");
+            var Y = DateTime.Now.ToString("yyyy");
+            var M = DateTime.Now.ToString("MMMM");
+            var D = DateTime.Now.ToString("dd") + GetDaySuffix(DateTime.Now.Day);
+            var HMS = DateTime.Now.ToString("HH_mm_ss");
+            Directory.CreateDirectory(csgopath + $@"\csgo\pov\{Y}\{M}\{D}");
 
-            var demoname = $"autodemo/{demosubdir}/{DateTime.Now.ToString("d_dddd__H_m_s")}";
+            var demo_name = $"pov/{Y}/{M}/{D}/{HMS}";
 
-            RunCmd("record", $"\\\"{demoname}\\\"");
+            ExecuteCmd("stop");
+            ExecuteCmd("record ", demo_name);
 
-            Log($"Recording to {demoname}...");
+            Log($"Started recording to {demo_name}");
+
+            recording = true;
         }
 
-        private bool firststate = true;
         private void OnNewGameState(GameState gs)
         {
-            if (firststate == true)
+            if (!recording)
             {
-                if (gs.Player.Activity == PlayerActivity.Playing)
+                if (gs.Round.Phase == RoundPhase.FreezeTime)
+                {
                     Record();
-
-                firststate = false;
-                return;
+                }
             }
-
-            if (gs.Player.Activity == PlayerActivity.Playing && gs.Previously.Player.Activity == PlayerActivity.Menu)
+            else
             {
-                Log("Started playing");
+                if (gs.Player.Activity != PlayerActivity.Playing && gs.Map.Phase == MapPhase.Undefined)
+                {
+                    Log("Stopped recording");
+                    recording = false;
 
-                Record();
-
-            }
-            else if (gs.Player.Activity == PlayerActivity.Menu && gs.Previously.Player.Activity == PlayerActivity.Playing)
-            {
-                Log("Stopped playing");
+                }
             }
         }
 
@@ -87,39 +143,40 @@ namespace csgo_AutoDemo
         {
             try
             {
-                File.Copy("gamestate_integration_autodemo.cfg", $@"{csgopath}\csgo\cfg\gamestate_integration_autodemo.cfg", false);
-                Log("Placed gsl config if it didn't already exist");
+                File.Copy("gamestate_integration_autodemo.cfg", $@"{csgopath}\csgo\cfg\gamestate_integration_autodemo.cfg", true);
+                Log("Created CSGI config");
             }
-            catch (Exception) {}
+            catch (Exception exc) {
+                Log($"Failed to create CSGI config: {exc.Message}");
+            }
         }
 
         public MainWindow()
         {
             InitializeComponent();
 
-            if (csgopath == "")
+            if (string.IsNullOrEmpty(csgopath))
             {
-                Log("Couldn't find csgo, is it installed?");
+                Log("Couldn't find csgo");
             }
             else
             {
                 PlaceGSLConfig();
-                Directory.CreateDirectory(csgopath + @"\csgo\autodemo");
-                Log("Created csgo/autodemo directory if didn't already exist");
+                Directory.CreateDirectory(csgopath + @"\csgo\pov");
+                Log("Created csgo/pov directory");
             }
 
-            gsl = new GameStateListener(13337);
-
+            gsl = new GameStateListener(3000);
             gsl.NewGameState += OnNewGameState;
 
             if (!gsl.Start())
             {
-                Log("Couldn't start even listener ");
+                Log("Couldn't start listener");
                 Log($"Maybe port {gsl.Port} can't be bound?");
             }
             else
             {
-                Log("Game State Listener started");
+                Log("CSGI started");
             }
 
             this.Closed += (_, __) =>
@@ -170,12 +227,12 @@ namespace csgo_AutoDemo
                 Enabler.Content = Enabler.Content.ToString().Replace("Enable", "Disable");
                 Log("Started listening");
             }
+
             enabled = !enabled;
         }
 
         private void Record_Button_Click(object sender, RoutedEventArgs e)
         {
-            RunCmd("stop");
             Record();
         }
 
@@ -184,14 +241,14 @@ namespace csgo_AutoDemo
         {
             StartUpKey.SetValue(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-            Log("Starting with windowsing from now on");
+            Log("Starting with Windows from now on");
         }
 
         private void StartWithWindows_checkBox_UnChecked(object sender, RoutedEventArgs e)
         {
             StartUpKey.DeleteValue(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
 
-            Log("Not starting with windowsing from now on");
+            Log("Not starting with Windows from now on");
         }
 
         private void StartWithWindows_checkBox_Initialized(object sender, EventArgs e)
