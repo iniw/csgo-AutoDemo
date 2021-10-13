@@ -8,18 +8,20 @@ namespace wvw_autodemo
         public static readonly string CFGNAME = "wvw_autodemo_cfg.json";
 
         public static string CSGOPath = string.Empty;
+        public static readonly string CSGOPATHKEY = "csgo_path";
 
-        public static bool SetDirectory()
+        public static bool WindowsStart = false;
+        public static readonly string WINDOWSSTARTKEY = "start_windows";
+
+        public static void SetDirectory()
         {
             string dir = CSGOPath + @"\csgo\pov";
 
             if (!Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
-                return true;
+                Utils.Log("Setup csgo/pov directory");
             }
-
-            return false;
         }
 
         public static bool Read()
@@ -30,8 +32,13 @@ namespace wvw_autodemo
             string json = File.ReadAllText(CFGNAME);
 
             JObject obj = JObject.Parse(json);
+            JToken val;
 
-            CSGOPath = obj["csgo_path"].ToString();
+            if (obj.TryGetValue(CSGOPATHKEY, out val))
+                CSGOPath = (string)val;
+
+            if (obj.TryGetValue(WINDOWSSTARTKEY, out val))
+                WindowsStart = (bool)val;
 
             return true;
         }
@@ -40,7 +47,8 @@ namespace wvw_autodemo
         {
             JObject obj = new JObject();
 
-            obj.Add("csgo_path", CSGOPath);
+            obj.Add(CSGOPATHKEY, CSGOPath);
+            obj.Add(WINDOWSSTARTKEY, WindowsStart);
 
             File.WriteAllText(CFGNAME, obj.ToString());
         }

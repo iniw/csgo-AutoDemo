@@ -14,7 +14,10 @@ namespace wvw_autodemo
 
             var window = Win32.FindWindow("Valve001", null);
             if (window == IntPtr.Zero)
+            {
+                Utils.Log("Failed to find CS:GO window");
                 return false;
+            }
 
             Win32.SendMessage(window, 0x4A, IntPtr.Zero, ref cds);
 

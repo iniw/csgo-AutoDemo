@@ -1,5 +1,5 @@
 # wvw_autodemo
-Based on LennyPenny's; updated to work on the newest steam/game versions and mostly rewritten.
+Originally based on LennyPenny's but now entirely rewritten.
 
 This tool will automatically record POV demos for you **when the freeze time period begins**. 
 
