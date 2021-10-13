@@ -5,7 +5,7 @@ This tool will automatically record POV demos for you **when the freeze time per
 
 It will save your demos to: `Counter-Strike Global Offensive\csgo\pov\year\month\day\map_hour_minute_second.dem`, to make it easy to cross-reference demos with Shadowplay clips.
 
-![https://cdn.discordapp.com/attachments/562496100884283394/897471117634187264/unknown.png](https://cdn.discordapp.com/attachments/562496100884283394/897471117634187264/unknown.png)
+![https://i.imgur.com/0oOe4sF.png](https://i.imgur.com/0oOe4sF.png)
 ## VAC
 The program doesn't read/write to the game's memory at all. It uses Valve's own [GSI](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration) api to retrieve information about the current game state and uses the Windows [SendMessage](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessage) function to execute console commands, to understand the latter read [this](https://github.com/perilouswithadollarsign/cstrike15_src/blob/f82112a2388b841d72cb62ca48ab1846dfcc11c8/engine/sys_mainwind.cpp#L774).
 
