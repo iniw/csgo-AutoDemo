@@ -22,7 +22,5 @@ namespace wvw_autodemo
 
             return true;
         }
-
     }
-
 }

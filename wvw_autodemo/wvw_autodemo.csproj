@@ -107,8 +107,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Helpers\CSGO.cs" />
-    <Compile Include="Helpers\Misc.cs" />
+    <Compile Include="Helpers\RegistryInfo.cs" />
+    <Compile Include="Implementation\CFG.cs" />
+    <Compile Include="Implementation\CSGO.cs" />
+    <Compile Include="Implementation\GSI.cs" />
+    <Compile Include="Helpers\Utils.cs" />
     <Compile Include="Helpers\Win32.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -170,6 +173,7 @@
   <ItemGroup>
     <Resource Include="wvw_autodemo.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

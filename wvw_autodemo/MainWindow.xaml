@@ -6,10 +6,15 @@
         xmlns:local="clr-namespace:wvw_autodemo"
         mc:Ignorable="d"
         Title="wvw_autodemo" Height="279" Width="350" Icon="pack://siteoforigin:,,,/wvw_autodemo.ico" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
-  <Grid Margin="5,10,5,5">
-    <TextBox x:Name="LogOutput" Height="170" Margin="0,26,0,0" TextWrapping="Wrap" Text="Starting up..." VerticalAlignment="Top" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible"/>
-    <Button x:Name="ForceRecord" Content="Force record" HorizontalContentAlignment="Center" Click="ForceRecord_Click" VerticalAlignment="Bottom" Height="27"/>
-    <CheckBox x:Name="WindowsStart" Content="Start with Windows" HorizontalAlignment="Left" VerticalAlignment="Top" Checked="WindowsStart_Checked" Unchecked="WindowsStart_UnChecked" Initialized="WindowsStart_Initialized" Height="26" Margin="10,0,0,0"/>
-    <Button x:Name="SetPath" Content="Set CS:GO path" HorizontalAlignment="Left" Margin="188,-3,0,0" VerticalAlignment="Top" Width="130" Click="SetPath_Click"/>
-  </Grid>
+    <Grid Margin="5,5,5,5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="109*"/>
+            <ColumnDefinition Width="168*"/>
+            <ColumnDefinition Width="57*"/>
+        </Grid.ColumnDefinitions>
+        <TextBox x:Name="LogOutput" Margin="0,25,0,32" TextWrapping="Wrap" Text="Starting up..." IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible" Grid.ColumnSpan="3"/>
+        <Button x:Name="ForceRecord" Content="Force record" HorizontalContentAlignment="Center" Click="ForceRecord_Click" VerticalAlignment="Bottom" Height="27" Grid.ColumnSpan="3"/>
+        <CheckBox x:Name="WindowsStart" Content="Start with Windows" VerticalAlignment="Top" Checked="WindowsStart_Checked" Unchecked="WindowsStart_UnChecked" Initialized="WindowsStart_Initialized" Height="26" Margin="0,3,123,0" Grid.ColumnSpan="2"/>
+        <Button x:Name="SetPath" Content="Set CS:GO path" Margin="95.192,0,0,0" VerticalAlignment="Top" Click="SetPath_Click" Grid.ColumnSpan="2" Grid.Column="1"/>
+    </Grid>
 </Window>

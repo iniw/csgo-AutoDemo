@@ -1,6 +1,6 @@
 ﻿namespace wvw_autodemo
 {
-    public class Misc
+    public class Utils
     {
         public static string GetDaySuffix(int day)
         {
