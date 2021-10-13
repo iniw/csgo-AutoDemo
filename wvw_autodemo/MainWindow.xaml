@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:wvw_autodemo"
         mc:Ignorable="d"
-        Title="autodemo" Height="279" Width="350" Icon="pack://siteoforigin:,,,/wvw_autodemo.ico" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+        Title="wvw_autodemo" Height="279" Width="350" Icon="pack://siteoforigin:,,,/wvw_autodemo.ico" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
   <Grid Margin="5,10,5,5">
     <TextBox x:Name="LogOutput" Height="170" Margin="0,26,0,0" TextWrapping="Wrap" Text="Starting up..." VerticalAlignment="Top" IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Visible"/>
     <Button x:Name="ForceRecord" Content="Force record" HorizontalContentAlignment="Center" Click="ForceRecord_Click" VerticalAlignment="Bottom" Height="27"/>

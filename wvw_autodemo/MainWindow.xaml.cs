@@ -102,8 +102,10 @@ namespace wvw_autodemo
             var M = DateTime.Now.ToString("MMMM");
             var D = DateTime.Now.ToString("dd") + GetDaySuffix(DateTime.Now.Day);
             var HMS = DateTime.Now.ToString("HH_mm_ss");
+
             Directory.CreateDirectory(m_CSGOPath + $@"\csgo\pov\{Y}\{M}\{D}");
 
+            // TODO: support for custom formatting of the demo name/folder
             var demoName = $"pov/{Y}/{M}/{D}/{m_CurrentMap}_{HMS}";
 
             if (!ExecuteCmd("stop") || !ExecuteCmd("record ", demoName))
@@ -148,9 +150,13 @@ namespace wvw_autodemo
                 return;
             }
 
-            Directory.CreateDirectory(m_CSGOPath + @"\csgo\pov");
-            Log("Setup csgo/pov directory");
+            string dir = m_CSGOPath + @"\csgo\pov";
 
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+                Log("Setup csgo/pov directory");
+            }
         }
 
         private void SetupCSGI()
@@ -189,7 +195,7 @@ namespace wvw_autodemo
             return true;
         }
 
-        private void SetupCFG(string newPath)
+        private void SetupCFG(string newCsgoPath)
         {
             string cwd = Directory.GetCurrentDirectory();
             string cfgPath = cwd + @"\autodemo_cfg.json";
@@ -203,7 +209,7 @@ namespace wvw_autodemo
 
                 writer.WriteStartObject();
                 writer.WritePropertyName("csgo_path");
-                writer.WriteValue(newPath);
+                writer.WriteValue(newCsgoPath);
                 writer.WriteEndObject();
             }
 
