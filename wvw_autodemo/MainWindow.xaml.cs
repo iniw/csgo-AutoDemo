@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Text;
+
+using Microsoft.Win32;
+
 using CSGSI;
 using CSGSI.Nodes;
 using Newtonsoft.Json;
-using Microsoft.Win32;
 
 namespace wvw_autodemo
 {
@@ -21,87 +22,16 @@ namespace wvw_autodemo
 
         private static readonly RegistryKey STARTUPKEY = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
         private static readonly string STEAMPATH = Registry.GetValue( @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam", "InstallPath", "").ToString();
+        
         private static readonly string CFGNAME = "wvw_autodemo_cfg.json";
 
         private static string m_CSGOPath = string.Empty;
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct COPYDATASTRUCT : IDisposable
-        {
-            public IntPtr dwData;
-            public int cbData;
-            public IntPtr lpData;
-
-            public void Dispose()
-            {
-                if (lpData != IntPtr.Zero)
-                {
-                    Marshal.FreeCoTaskMem(lpData);
-                    lpData = IntPtr.Zero;
-                    cbData = 0;
-                }
-            }
-            public static COPYDATASTRUCT CreateForString(int dwData, string value, bool Unicode = false)
-            {
-                var result = new COPYDATASTRUCT();
-                result.dwData = (IntPtr)dwData;
-                result.lpData = Unicode ? Marshal.StringToCoTaskMemUni(value) : Marshal.StringToCoTaskMemAnsi(value);
-                result.cbData = value.Length + 1;
-                return result;
-            }
-        }
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, ref COPYDATASTRUCT lParam);
-
-        private string GetDaySuffix(int day)
-        {
-            switch (day)
-            {
-                case 1:
-                case 21:
-                case 31:
-                    return "st";
-                case 2:
-                case 22:
-                    return "nd";
-                case 3:
-                case 23:
-                    return "rd";
-                default:
-                    return "th";
-            }
-        }
-
-        private bool ExecuteCmd(string cmd, string args = "")
-        {
-            var message = cmd + args;
-
-            var cds = COPYDATASTRUCT.CreateForString(0, message);
-            if (cds.lpData == IntPtr.Zero)
-                return false;
-
-            var window = FindWindow("Valve001", null);
-            if (window == IntPtr.Zero)
-            {
-                Log("Couldn't find the CSGO window");
-                return false;
-            }
-
-            SendMessage(window, 0x4A, IntPtr.Zero, ref cds);
-
-            cds.Dispose();
-
-            return true;
-        }
 
         private void StartRecording()
         {
             var Y = DateTime.Now.ToString("yyyy");
             var M = DateTime.Now.ToString("MMMM");
-            var D = DateTime.Now.ToString("dd") + GetDaySuffix(DateTime.Now.Day);
+            var D = DateTime.Now.ToString("dd") + Misc.GetDaySuffix(DateTime.Now.Day);
             var HMS = DateTime.Now.ToString("HH_mm_ss");
 
             Directory.CreateDirectory(m_CSGOPath + $@"\csgo\pov\{Y}\{M}\{D}");
@@ -109,8 +39,10 @@ namespace wvw_autodemo
             // TODO: support for custom formatting of the demo name/folder
             var demoName = $"pov/{Y}/{M}/{D}/{m_CurrentMap}_{HMS}";
 
-            if (!ExecuteCmd("stop") || !ExecuteCmd("record ", demoName))
-                return;
+            if (!CSGO.ExecuteCmd("stop") || !CSGO.ExecuteCmd("record ", demoName))
+            {
+                Log("Failed to execute command");
+            }
 
             Log($"Started recording to {demoName}");
 
@@ -206,6 +138,13 @@ namespace wvw_autodemo
                 writer.WritePropertyName("csgo_path");
                 writer.WriteValue(newCsgoPath);
                 writer.WriteEndObject();
+            }
+
+            using (StreamWriter file = File.CreateText(@"D:\path.txt"))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                //serialize object directly into file stream
+                serializer.Serialize(file, newCsgoPath);
             }
 
             File.WriteAllText(CFGNAME, sb.ToString());
