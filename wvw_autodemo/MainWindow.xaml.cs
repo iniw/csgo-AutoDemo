@@ -18,7 +18,6 @@ namespace wvw_autodemo
         private bool m_Setup = false;
 
         private GameStateListener m_GSL;
-        private bool m_SetupGSL = false;
 
         private static readonly RegistryKey STARTUPKEY = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
         private static readonly string STEAMPATH = Registry.GetValue( @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam", "InstallPath", "").ToString();
@@ -156,9 +155,6 @@ namespace wvw_autodemo
 
         private void SetupCSGI()
         {
-            if (m_SetupGSL)
-                return;
-
             m_GSL = new GameStateListener(3333);
             m_GSL.NewGameState += OnNewGameState;
                 
