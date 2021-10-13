@@ -13,4 +13,4 @@ The program doesn't read/write to the game's memory at all. It uses Valve's own 
 You should run the program at least once before opening up the game to make sure that `csgo\cfg\gamestate_integration_autodemo.cfg` gets written properly, after that you are free to open it mid-game.
 
 ## Download
-Download it [here](https://github.com/iniw/csgo-AutoDemo/releases)
+Download it [here](https://github.com/iniw/csgo-AutoDemo/releases).

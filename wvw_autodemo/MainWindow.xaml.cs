@@ -21,7 +21,8 @@ namespace wvw_autodemo
 
         private static readonly RegistryKey STARTUPKEY = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
         private static readonly string STEAMPATH = Registry.GetValue( @"HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Valve\Steam", "InstallPath", "").ToString();
-       
+        private static readonly string CFGNAME = "wvw_autodemo_cfg.json";
+
         private static string m_CSGOPath = string.Empty;
 
         [StructLayout(LayoutKind.Sequential)]
@@ -96,7 +97,7 @@ namespace wvw_autodemo
             return true;
         }
 
-        private void Record()
+        private void StartRecording()
         {
             var Y = DateTime.Now.ToString("yyyy");
             var M = DateTime.Now.ToString("MMMM");
@@ -124,7 +125,7 @@ namespace wvw_autodemo
             {
                 if (gs.Round.Phase == RoundPhase.FreezeTime)
                 {
-                    Record();
+                    StartRecording();
                 }
             }
             else
@@ -142,11 +143,11 @@ namespace wvw_autodemo
             try
             {
                 File.Copy("gamestate_integration_autodemo.cfg", $@"{m_CSGOPath}\csgo\cfg\gamestate_integration_autodemo.cfg", true);
-                Log("Setup CSGI config");
+                Log("Setup GSI config");
             }
             catch (Exception exc)
             {
-                Log($"Failed to create CSGI config: {exc.Message}");
+                Log($"Failed to create GSI config: {exc.Message}");
                 return;
             }
 
@@ -159,26 +160,23 @@ namespace wvw_autodemo
             }
         }
 
-        private void SetupCSGI()
+        private void SetupCSGSI()
         {
             m_GSL = new GameStateListener(3333);
             m_GSL.NewGameState += OnNewGameState;
                 
             if (m_GSL.Start())
-                Log("Setup CSGI");
+                Log("Setup CSGSI");
             else
-                Log("Couldn't setup CSGI");
+                Log("Couldn't setup CSGSI");
         }
 
         private bool ReadFromCFG()
         {
-            string cwd = Directory.GetCurrentDirectory();
-            string cfgPath = cwd + @"\autodemo_cfg.json";
-
-            if (!File.Exists(cfgPath))
+            if (!File.Exists(CFGNAME))
                 return false;
 
-            string text = File.ReadAllText(cfgPath);
+            string text = File.ReadAllText(CFGNAME);
 
             JsonTextReader reader = new JsonTextReader(new StringReader(text));
             
@@ -197,9 +195,6 @@ namespace wvw_autodemo
 
         private void SetupCFG(string newCsgoPath)
         {
-            string cwd = Directory.GetCurrentDirectory();
-            string cfgPath = cwd + @"\autodemo_cfg.json";
-
             StringBuilder sb = new StringBuilder();
             StringWriter sw = new StringWriter(sb);
 
@@ -213,8 +208,8 @@ namespace wvw_autodemo
                 writer.WriteEndObject();
             }
 
-            File.WriteAllText(cfgPath, sb.ToString());
-            Log("Written changes to cfg file");
+            File.WriteAllText(CFGNAME, sb.ToString());
+            Log("Changes written to cfg file");
 
             ReadFromCFG();
         }
@@ -228,7 +223,7 @@ namespace wvw_autodemo
                 Log("CSGO path retrieved from cfg file");
 
                 SetupDirectories();
-                SetupCSGI();
+                SetupCSGSI();
                 m_Setup = true;
 
                 SetPath.Visibility = Visibility.Hidden;
@@ -267,7 +262,7 @@ namespace wvw_autodemo
                 return;
             }
 
-            Record();
+            StartRecording();
         }
 
         private void SetPath_Click(object sender, RoutedEventArgs e)
@@ -275,7 +270,7 @@ namespace wvw_autodemo
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = STEAMPATH;
             openFileDialog.DefaultExt = ".exe";
-            openFileDialog.Filter = "exe file (csgo.exe)|csgo.exe";
+            openFileDialog.Filter = "exe file|csgo.exe";
             openFileDialog.FilterIndex = 0;
             if (openFileDialog.ShowDialog() == true)
             {
@@ -285,7 +280,7 @@ namespace wvw_autodemo
 
                 SetupCFG(path);
                 SetupDirectories();
-                SetupCSGI();
+                SetupCSGSI();
                 m_Setup = true;
 
                 SetPath.Visibility = Visibility.Hidden;
