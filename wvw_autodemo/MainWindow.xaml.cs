@@ -75,22 +75,26 @@ namespace wvw_autodemo
             }
         }
 
-        private void ExecuteCmd(string cmd, string args = "")
+        private bool ExecuteCmd(string cmd, string args = "")
         {
             var message = cmd + args;
 
             var cds = COPYDATASTRUCT.CreateForString(0, message);
+            if (cds.lpData == IntPtr.Zero)
+                return false;
 
             var window = FindWindow("Valve001", null);
             if (window == IntPtr.Zero)
             {
                 Log("Couldn't find the CSGO window");
-                return;
+                return false;
             }
 
             SendMessage(window, 0x4A, IntPtr.Zero, ref cds);
 
             cds.Dispose();
+
+            return true;
         }
 
         private void Record()
@@ -103,8 +107,8 @@ namespace wvw_autodemo
 
             var demoName = $"pov/{Y}/{M}/{D}/{m_CurrentMap}_{HMS}";
 
-            ExecuteCmd("stop"); 
-            ExecuteCmd("record ", demoName);
+            if (!ExecuteCmd("stop") || !ExecuteCmd("record ", demoName))
+                return;
 
             Log($"Started recording to {demoName}");
 
