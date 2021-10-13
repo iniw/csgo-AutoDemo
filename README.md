@@ -1,9 +1,9 @@
-# CS:GO AutoDemo
-Based on LennyPenny's; updated to work on the newest steam/game versions and rewritten the most important parts.
+# wvw_autodemo
+Based on LennyPenny's; updated to work on the newest steam/game versions and mostly rewritten.
 
 This tool will automatically record POV demos for you **when the freeze time period begins**. 
 
-It will save your demos to: `Counter-Strike Global Offensive\csgo\pov\year\month\day\map_hour_minute_second.dem`, to make it easy to cross-reference demos with Shadowplay clips.
+It will save them to: `Counter-Strike Global Offensive\csgo\pov\year\month\day\map_hour_minute_second.dem`, to make it easy to cross-reference with Shadowplay clips.
 
 ![https://i.imgur.com/0oOe4sF.png](https://i.imgur.com/0oOe4sF.png)
 ## VAC
