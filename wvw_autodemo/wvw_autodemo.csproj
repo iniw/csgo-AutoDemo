@@ -2,9 +2,11 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>wvw_autodemo.ico</ApplicationIcon>
+    <Platforms>AnyCPU;x86</Platforms>
+	<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +16,7 @@
   <ItemGroup>
     <None Update="gamestate_integration_autodemo.cfg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		
     </None>
   </ItemGroup>
 
